@@ -1,2 +1,29 @@
-- name: Waka - Readme
-uses: athul/waka-readme@v0.3.1
+name: WakaTime Stats
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Runs every hour
+  workflow_dispatch: # Allows you to manually run the action
+
+jobs:
+  update-wakatime-stats:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Update WakaTime stats
+      env:
+        WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }} # Store your WakaTime API Key in GitHub Secrets
+      run: |
+        curl -o wakatime-stats.txt "https://wakatime.com/api/v1/users/current/stats/last_7_days?api_key=$WAKATIME_API_KEY"
+        echo "WakaTime stats updated"
+    
+    - name: Commit changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add wakatime-stats.txt
+        git commit -m "Update WakaTime stats"
+        git push
